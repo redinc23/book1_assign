@@ -94,7 +94,7 @@ export function Chapters() {
                       <Edit3 className="w-3.5 h-3.5 text-muted" />
                     </button>
                     <button
-                      onClick={async () => { await remove(ch.id); await log('Deleted', `Ch ${ch.number}: ${ch.title}`, 'chapter', ch.id, activeBook?.id); showToast('Chapter deleted'); }}
+                      onClick={async () => { const ok = await remove(ch.id); if (ok) { await log('Deleted', `Ch ${ch.number}: ${ch.title}`, 'chapter', ch.id, activeBook?.id); showToast('Chapter deleted'); } else { showToast('Failed to delete chapter. Please try again.'); } }}
                       className="p-1.5 rounded hover:bg-accent-red/20 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5 text-accent-red" />
@@ -114,10 +114,14 @@ export function Chapters() {
         onClose={() => setShowCreate(false)}
         nextNumber={chapters.length > 0 ? Math.max(...chapters.map(c => c.number)) + 1 : 1}
         onSubmit={async (data) => {
-          await create(data);
-          await log('Created', `Ch ${data.number}: ${data.title}`, 'chapter', undefined, activeBook?.id);
-          showToast('Chapter created');
-          setShowCreate(false);
+          const ok = await create(data);
+          if (ok) {
+            await log('Created', `Ch ${data.number}: ${data.title}`, 'chapter', undefined, activeBook?.id);
+            showToast('Chapter created');
+            setShowCreate(false);
+          } else {
+            showToast('Failed to create chapter. Please try again.');
+          }
         }}
       />
 
@@ -128,10 +132,14 @@ export function Chapters() {
           initial={editing}
           nextNumber={editing.number}
           onSubmit={async (data) => {
-            await update(editing.id, data);
-            await log('Updated', `Ch ${data.number || editing.number}: ${data.title || editing.title}`, 'chapter', editing.id, activeBook?.id);
-            showToast('Chapter updated');
-            setEditing(null);
+            const ok = await update(editing.id, data);
+            if (ok) {
+              await log('Updated', `Ch ${data.number || editing.number}: ${data.title || editing.title}`, 'chapter', editing.id, activeBook?.id);
+              showToast('Chapter updated');
+              setEditing(null);
+            } else {
+              showToast('Failed to update chapter. Please try again.');
+            }
           }}
         />
       )}

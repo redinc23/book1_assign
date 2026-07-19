@@ -52,7 +52,7 @@ export function Characters() {
                   <p className="text-xs text-muted mt-0.5">{char.role || 'No role'}</p>
                 </div>
                 <button
-                  onClick={(e) => { e.stopPropagation(); remove(char.id); log('Deleted', char.name, 'character', char.id, activeBook?.id); showToast('Character deleted'); }}
+                  onClick={async (e) => { e.stopPropagation(); const ok = await remove(char.id); if (ok) { await log('Deleted', char.name, 'character', char.id, activeBook?.id); showToast('Character deleted'); } else { showToast('Failed to delete character. Please try again.'); } }}
                   className="p-1.5 rounded hover:bg-accent-red/20 transition-colors opacity-0 group-hover:opacity-100"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-accent-red" />
@@ -72,10 +72,14 @@ export function Characters() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSubmit={async (data) => {
-          await create(data);
-          await log('Created', data.name || 'character', 'character', undefined, activeBook?.id);
-          showToast('Character created');
-          setShowCreate(false);
+          const ok = await create(data);
+          if (ok) {
+            await log('Created', data.name || 'character', 'character', undefined, activeBook?.id);
+            showToast('Character created');
+            setShowCreate(false);
+          } else {
+            showToast('Failed to create character. Please try again.');
+          }
         }}
       />
 
@@ -85,10 +89,14 @@ export function Characters() {
           onClose={() => setEditing(null)}
           initial={editing}
           onSubmit={async (data) => {
-            await update(editing.id, data);
-            await log('Updated', data.name || editing.name, 'character', editing.id, activeBook?.id);
-            showToast('Character updated');
-            setEditing(null);
+            const ok = await update(editing.id, data);
+            if (ok) {
+              await log('Updated', data.name || editing.name, 'character', editing.id, activeBook?.id);
+              showToast('Character updated');
+              setEditing(null);
+            } else {
+              showToast('Failed to update character. Please try again.');
+            }
           }}
         />
       )}

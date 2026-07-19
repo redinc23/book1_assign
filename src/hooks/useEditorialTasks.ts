@@ -30,20 +30,26 @@ export function useEditorialTasks(bookId: string | undefined) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const create = async (data: Partial<DbEditorialTask>) => {
-    if (!bookId) return;
-    await supabase.from('editorial_tasks').insert({ book_id: bookId, title: data.title || 'New Task', chapter: data.chapter || '', assignee: data.assignee || '', severity: data.severity || 'medium', status: data.status || 'backlog', type: data.type || '' });
+  const create = async (data: Partial<DbEditorialTask>): Promise<boolean> => {
+    if (!bookId) return false;
+    const { error } = await supabase.from('editorial_tasks').insert({ book_id: bookId, title: data.title || 'New Task', chapter: data.chapter || '', assignee: data.assignee || '', severity: data.severity || 'medium', status: data.status || 'backlog', type: data.type || '' });
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const update = async (id: string, data: Partial<DbEditorialTask>) => {
-    await supabase.from('editorial_tasks').update(data).eq('id', id);
+  const update = async (id: string, data: Partial<DbEditorialTask>): Promise<boolean> => {
+    const { error } = await supabase.from('editorial_tasks').update(data).eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const remove = async (id: string) => {
-    await supabase.from('editorial_tasks').delete().eq('id', id);
+  const remove = async (id: string): Promise<boolean> => {
+    const { error } = await supabase.from('editorial_tasks').delete().eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
   return { tasks, loading, refresh, create, update, remove };

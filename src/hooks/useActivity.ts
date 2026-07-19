@@ -31,16 +31,18 @@ export function useActivity() {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const log = useCallback(async (action: string, target: string, entityType?: string, entityId?: string, bookId?: string) => {
-    if (!user) return;
-    await supabase.from('activity_log').insert({
+  const log = useCallback(async (action: string, target: string, entityType?: string, entityId?: string, bookId?: string): Promise<boolean> => {
+    if (!user) return false;
+    const { error } = await supabase.from('activity_log').insert({
       action,
       target,
       entity_type: entityType || '',
       entity_id: entityId || null,
       book_id: bookId || null,
     });
+    if (error) return false;
     await refresh();
+    return true;
   }, [user, refresh]);
 
   return { entries, loading, refresh, log };
