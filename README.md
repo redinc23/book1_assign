@@ -2,47 +2,58 @@
 
 Canonical React + TypeScript application for the MANGU Book Operating System.
 
-**Data store: MongoDB.** Auth and persistence run through a Hono API (`/api/*`) backed by MongoDB — Supabase is not used.
+**Data store: MongoDB Atlas** (same ops stack as `my_publishing`). Auth + CRUD go through a Hono API (`/api/*`). Supabase is not used.
+
+## Mongo setup (same as my_publishing)
+
+If you already have a URI from `my_publishing` / Atlas:
+
+```bash
+npm install
+npm run db:mongo:import-uri -- 'mongodb+srv://...'
+```
+
+That writes `.env.local` with **`MONGODB_DB=mangu_book_os`** (separate database on the same cluster as the storefront `mangu` DB — no collection collisions).
+
+Or bootstrap Atlas with the same API keys:
+
+```bash
+export ATLAS_PUBLIC_KEY='...'
+export ATLAS_PRIVATE_KEY='...'
+# optional: VERCEL_TOKEN + VERCEL_PROJECT_ID for env sync
+npm run db:mongo:up
+```
+
+Scripts (ported from `my_publishing`):
+
+| Script | What it does |
+|---|---|
+| `db:atlas:bootstrap` | Org → project → M0 cluster → user → IP allowlist → `.env.local` |
+| `db:mongo:ping` | Ping cluster |
+| `db:mongo:indexes` | Book OS indexes |
+| `db:mongo:sync-vercel` | Push `MONGODB_*` + `AUTH_SECRET` to Vercel |
+| `db:mongo:up` | All of the above |
+| `db:mongo:import-uri` | Paste an existing URI |
 
 ## Run locally
 
 ```bash
-npm install
-cp .env.example .env
-# fill MONGODB_URI + AUTH_SECRET
 npm run dev
 ```
 
-This starts:
-- API on `http://localhost:3001` (`server/dev.ts`)
-- Vite on `http://localhost:5173` (proxies `/api` → API)
+- API: `http://localhost:3001`
+- Web: `http://localhost:5173` (proxies `/api`)
 
-## Environment
+## Deploy (Vercel)
 
-| Variable | Where | Purpose |
-|---|---|---|
-| `MONGODB_URI` | API / Vercel | MongoDB Atlas connection string |
-| `MONGODB_DB` | API / Vercel | Database name (default `mangu_book_os`) |
-| `AUTH_SECRET` | API / Vercel | JWT signing secret for session cookies |
-| `API_PORT` | local only | API port (default `3001`) |
-
-## Validation
-
-```bash
-npm run typecheck
-npm run build
-```
-
-## Deployment (Vercel)
-
-1. Import `redinc23/book1_assign` into Vercel (Vite is already configured in `vercel.json`).
-2. Set **Production** + **Preview** env vars: `MONGODB_URI`, `MONGODB_DB`, `AUTH_SECRET`.
-3. Deploy. Serverless routes live in `api/[...path].ts`; the SPA rewrite skips `/api/*`.
+1. Import `redinc23/book1_assign`
+2. `export VERCEL_PROJECT_ID=prj_... VERCEL_TOKEN=... && npm run db:mongo:sync-vercel`
+3. Redeploy
 
 ## Architecture
 
-- `src/views/` — product modules
-- `src/hooks/` + `src/contexts/` — client state calling `/api`
-- `server/` — Hono app, MongoDB access, JWT auth
+- `src/` — Vite React client (`/api` via `src/lib/api.ts`)
+- `server/` — Hono app + Mongo client (Fluid-aware singleton, same pattern as `my_publishing/lib/mongodb.ts`)
 - `api/[...path].ts` — Vercel Functions entry
-- `prototype-reference/` — earlier standalone v0.2 kernel (localStorage) used as interaction reference
+- `scripts/` — Atlas bootstrap / ping / indexes / Vercel sync
+- `prototype-reference/` — v0.2 localStorage kernel (interaction reference only)

@@ -1,32 +1,7 @@
-import { MongoClient, Db, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import { getDb } from './mongodb';
 
-const uri = process.env.MONGODB_URI;
-
-if (!uri) {
-  console.warn('MONGODB_URI is not set');
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __manguMongo: { client: MongoClient; db: Db } | undefined;
-}
-
-export async function getDb(): Promise<Db> {
-  if (!uri) {
-    throw new Error('Missing MONGODB_URI environment variable');
-  }
-
-  if (globalThis.__manguMongo) {
-    return globalThis.__manguMongo.db;
-  }
-
-  const client = new MongoClient(uri);
-  await client.connect();
-  const dbName = process.env.MONGODB_DB || 'mangu_book_os';
-  const db = client.db(dbName);
-  globalThis.__manguMongo = { client, db };
-  return db;
-}
+export { getDb } from './mongodb';
 
 export function toObjectId(id: string): ObjectId | null {
   if (!ObjectId.isValid(id)) return null;

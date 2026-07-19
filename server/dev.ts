@@ -1,5 +1,8 @@
 import { serve } from '@hono/node-server';
+import { loadDotEnvLocal } from '../scripts/lib/env-file';
 import app from './app';
+
+loadDotEnvLocal();
 
 const port = Number(process.env.API_PORT || 3001);
 

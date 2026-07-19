@@ -10,11 +10,19 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "db:atlas:bootstrap": "tsx scripts/atlas-bootstrap.ts",
+    "db:mongo:ping": "tsx scripts/mongo-ping.ts",
+    "db:mongo:indexes": "tsx scripts/mongo-ensure-indexes.ts",
+    "db:mongo:sync-vercel": "tsx scripts/sync-mongodb-to-vercel.ts",
+    "db:mongo:up": "tsx scripts/mongo-up.ts",
+    "db:mongo:import-uri": "tsx scripts/mongo-import-uri.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.10",
+    "@vercel/functions": "^3.7.5",
     "bcryptjs": "^3.0.3",
+    "digest-fetch": "^3.1.1",
     "hono": "^4.12.31",
     "jose": "^6.2.3",
     "lucide-react": "^0.344.0",
