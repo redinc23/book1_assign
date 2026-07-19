@@ -5,6 +5,7 @@ import { useChapters } from '../hooks/useChapters';
 import { useActivity } from '../hooks/useActivity';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
+import { progressPercent } from '../lib/progress';
 import type { DbChapter } from '../hooks/useChapters';
 
 export function Chapters() {
@@ -23,7 +24,7 @@ export function Chapters() {
     if (activeBook) {
       const currentTotalWords = chapters.reduce((a, c) => a + c.word_count, 0);
       if (currentTotalWords !== activeBook.word_count) {
-        const progress = activeBook.target_word_count > 0 ? Math.min(100, Math.round((currentTotalWords / activeBook.target_word_count) * 100)) : 0;
+        const progress = progressPercent(currentTotalWords, activeBook.target_word_count);
         updateBook(activeBook.id, { word_count: currentTotalWords, progress })
           .catch(err => console.error('Failed to sync book word count:', err));
       }
@@ -55,7 +56,7 @@ export function Chapters() {
       ) : (
         <div className="space-y-3">
           {chapters.map((ch) => {
-            const pct = ch.target_word_count > 0 ? Math.min(100, Math.round((ch.word_count / ch.target_word_count) * 100)) : 0;
+            const pct = progressPercent(ch.word_count, ch.target_word_count);
             return (
               <div key={ch.id} className="card-gradient rounded-card border border-line p-5 hover:border-gold/20 transition-all group">
                 <div className="flex items-start gap-4">

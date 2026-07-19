@@ -3,6 +3,7 @@ import { useBooks } from '../contexts/BookContext';
 import { useChapters } from '../hooks/useChapters';
 import { useProductionTasks } from '../hooks/useProductionTasks';
 import { useMarketingItems } from '../hooks/useMarketingItems';
+import { progressPercent } from '../lib/progress';
 
 export function Lifecycle() {
   const { activeBook, loading: bookLoading } = useBooks();
@@ -41,7 +42,7 @@ export function Lifecycle() {
     {
       name: 'First Draft',
       status: activeBook.phase === 'First Draft' ? 'active' as const : ['Concept', 'Outline'].includes(activeBook.phase) ? 'upcoming' as const : 'complete' as const,
-      progress: totalChapters > 0 ? Math.round(((completeChapters + workingChapters) / totalChapters) * 100) : 0,
+      progress: progressPercent(completeChapters + workingChapters, totalChapters),
       tasks: [{ label: `${completeChapters}/${totalChapters} chapters drafted`, done: completeChapters === totalChapters && totalChapters > 0 }, { label: 'Word count target met', done: activeBook.word_count >= activeBook.target_word_count }],
     },
     {
@@ -53,13 +54,13 @@ export function Lifecycle() {
     {
       name: 'Production',
       status: activeBook.phase === 'Production' ? 'active' as const : ['Concept', 'Outline', 'First Draft', 'Revision'].includes(activeBook.phase) ? 'upcoming' as const : 'complete' as const,
-      progress: prodTasks.length > 0 ? Math.round((prodComplete / prodTasks.length) * 100) : 0,
+      progress: progressPercent(prodComplete, prodTasks.length),
       tasks: [{ label: `${prodComplete}/${prodTasks.length} production tasks done`, done: prodComplete === prodTasks.length && prodTasks.length > 0 }],
     },
     {
       name: 'Launch & Marketing',
       status: activeBook.phase === 'Marketing' || activeBook.phase === 'Published' ? 'active' as const : 'upcoming' as const,
-      progress: marketItems.length > 0 ? Math.round((marketComplete / marketItems.length) * 100) : 0,
+      progress: progressPercent(marketComplete, marketItems.length),
       tasks: [{ label: `${marketComplete}/${marketItems.length} campaigns done`, done: marketComplete === marketItems.length && marketItems.length > 0 }],
     },
   ];

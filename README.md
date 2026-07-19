@@ -16,8 +16,21 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env`.
 
 ```bash
 npm run typecheck
+npm run lint
+npm run test
 npm run build
 ```
+
+## Continuous integration
+
+Every push to `main` and every pull request runs the CI workflow in
+`.github/workflows/ci.yml`, which typechecks, lints, runs the test suite, and
+builds the app on the Node version pinned in `.nvmrc`. The status check appears
+on each PR, so a change is only mergeable once it is green.
+
+Unit tests live next to the code they cover (`src/**/*.test.ts`) and run under
+[Vitest](https://vitest.dev/). See `src/lib/progress.test.ts` for the shared
+progress-percentage helper.
 
 ## Deployment (Vercel)
 
