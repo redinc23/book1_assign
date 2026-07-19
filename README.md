@@ -2,6 +2,20 @@
 
 Canonical React + TypeScript + Supabase application for the MANGU Book Operating System.
 
+## Product specifications (start here for the full build)
+
+Engineering-ready BRD, FRD, Tech Spec, and backlog live in [`docs/specs/`](./docs/specs/00-INDEX.md):
+
+| Document | Purpose |
+|---|---|
+| [00-INDEX](./docs/specs/00-INDEX.md) | Suite map, phases, traceability |
+| [01-BRD](./docs/specs/01-BRD-MANGU-Book-OS.md) | Business requirements, M0–M20, AI governance |
+| [02-FRD](./docs/specs/02-FRD-MANGU-Book-OS.md) | Functional requirements (`FR-*` IDs + acceptance) |
+| [03-TECH-SPEC](./docs/specs/03-TECH-SPEC-MANGU-Book-OS.md) | Architecture, schema, ADK, migrations, DoD |
+| [04-ENGINEERING-BACKLOG](./docs/specs/04-ENGINEERING-BACKLOG.md) | Phased tickets ready to assign |
+
+Authority sources: MANGU Book OS Manual v1.0 (Volumes I–XVIII), this app, and `prototype-reference/` (UX/domain reference only).
+
 ## Run locally
 
 ```bash
