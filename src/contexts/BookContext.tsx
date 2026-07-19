@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from './AuthContext';
 
 export interface Book {
@@ -38,16 +38,27 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!user) { setBooks([]); setLoading(false); return; }
-    const { data, error } = await supabase
-      .from('books')
-      .select('*')
-      .order('updated_at', { ascending: false });
-    if (!error && data) {
-      setBooks(data);
-      setActiveBookId(currentId => (currentId && data.some(b => b.id === currentId)) ? currentId : (data.length > 0 ? data[0].id : null));
+    if (!user) {
+      setBooks([]);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    try {
+      const { data } = await api.get<{ data: Book[] }>('/books');
+      setBooks(data);
+      setActiveBookId((currentId) =>
+        currentId && data.some((b) => b.id === currentId)
+          ? currentId
+          : data.length > 0
+            ? data[0].id
+            : null,
+      );
+    } catch (err) {
+      console.error('Failed to load books:', err);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -55,23 +66,29 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
   }, [refresh]);
 
   const createBook = async (data: Partial<Book>): Promise<Book | null> => {
-    const { data: created, error } = await supabase
-      .from('books')
-      .insert({ title: data.title || 'Untitled', author: data.author || '', genre: data.genre || '', cover_url: data.cover_url || '', target_word_count: data.target_word_count || 80000, deadline: data.deadline || null })
-      .select()
-      .single();
-    if (error) return null;
-    await refresh();
-    return created;
+    try {
+      const { data: created } = await api.post<{ data: Book }>('/books', {
+        title: data.title || 'Untitled',
+        author: data.author || '',
+        genre: data.genre || '',
+        cover_url: data.cover_url || '',
+        target_word_count: data.target_word_count || 80000,
+        deadline: data.deadline || null,
+      });
+      await refresh();
+      return created;
+    } catch {
+      return null;
+    }
   };
 
   const updateBook = async (id: string, data: Partial<Book>) => {
-    await supabase.from('books').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
+    await api.patch(`/books/${id}`, data);
     await refresh();
   };
 
   const deleteBook = async (id: string) => {
-    await supabase.from('books').delete().eq('id', id);
+    await api.delete(`/books/${id}`);
     if (activeBookId === id) setActiveBookId(null);
     await refresh();
   };
@@ -79,7 +96,9 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
   const activeBook = books.find((b) => b.id === activeBookId) || books[0] || null;
 
   return (
-    <BookContext.Provider value={{ books, activeBook, setActiveBookId, loading, refresh, createBook, updateBook, deleteBook }}>
+    <BookContext.Provider
+      value={{ books, activeBook, setActiveBookId, loading, refresh, createBook, updateBook, deleteBook }}
+    >
       {children}
     </BookContext.Provider>
   );

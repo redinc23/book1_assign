@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
 export interface DbActivity {
@@ -19,31 +19,50 @@ export function useActivity() {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!user) { setEntries([]); setLoading(false); return; }
-    const { data, error } = await supabase
-      .from('activity_log')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
-    if (!error && data) setEntries(data);
-    setLoading(false);
+    if (!user) {
+      setEntries([]);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data } = await api.get<{ data: DbActivity[] }>('/activity');
+      setEntries(data);
+    } catch {
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
-  const log = useCallback(async (action: string, target: string, entityType?: string, entityId?: string, bookId?: string): Promise<boolean> => {
-    if (!user) return false;
-    const { error } = await supabase.from('activity_log').insert({
-      action,
-      target,
-      entity_type: entityType || '',
-      entity_id: entityId || null,
-      book_id: bookId || null,
-    });
-    if (error) return false;
-    await refresh();
-    return true;
-  }, [user, refresh]);
+  const log = useCallback(
+    async (
+      action: string,
+      target: string,
+      entityType?: string,
+      entityId?: string,
+      bookId?: string,
+    ): Promise<boolean> => {
+      if (!user) return false;
+      try {
+        await api.post('/activity', {
+          action,
+          target,
+          entity_type: entityType || '',
+          entity_id: entityId || null,
+          book_id: bookId || null,
+        });
+        await refresh();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [user, refresh],
+  );
 
   return { entries, loading, refresh, log };
 }

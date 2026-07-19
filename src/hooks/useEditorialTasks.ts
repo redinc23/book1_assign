@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
 
 export interface DbEditorialTask {
   id: string;
@@ -18,38 +18,64 @@ export function useEditorialTasks(bookId: string | undefined) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!bookId) { setTasks([]); setLoading(false); return; }
-    const { data, error } = await supabase
-      .from('editorial_tasks')
-      .select('*')
-      .eq('book_id', bookId)
-      .order('created_at', { ascending: true });
-    if (!error && data) setTasks(data);
-    setLoading(false);
+    if (!bookId) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data } = await api.get<{ data: DbEditorialTask[] }>(
+        `/editorial_tasks?book_id=${encodeURIComponent(bookId)}`,
+      );
+      setTasks(data);
+    } catch {
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
   }, [bookId]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const create = async (data: Partial<DbEditorialTask>): Promise<boolean> => {
     if (!bookId) return false;
-    const { error } = await supabase.from('editorial_tasks').insert({ book_id: bookId, title: data.title || 'New Task', chapter: data.chapter || '', assignee: data.assignee || '', severity: data.severity || 'medium', status: data.status || 'backlog', type: data.type || '' });
-    if (error) return false;
-    await refresh();
-    return true;
+    try {
+      await api.post('/editorial_tasks', {
+        book_id: bookId,
+        title: data.title || 'New Task',
+        chapter: data.chapter || '',
+        assignee: data.assignee || '',
+        severity: data.severity || 'medium',
+        status: data.status || 'backlog',
+        type: data.type || '',
+      });
+      await refresh();
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const update = async (id: string, data: Partial<DbEditorialTask>): Promise<boolean> => {
-    const { error } = await supabase.from('editorial_tasks').update(data).eq('id', id);
-    if (error) return false;
-    await refresh();
-    return true;
+    try {
+      await api.patch(`/editorial_tasks/${id}`, data);
+      await refresh();
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const remove = async (id: string): Promise<boolean> => {
-    const { error } = await supabase.from('editorial_tasks').delete().eq('id', id);
-    if (error) return false;
-    await refresh();
-    return true;
+    try {
+      await api.delete(`/editorial_tasks/${id}`);
+      await refresh();
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   return { tasks, loading, refresh, create, update, remove };

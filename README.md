@@ -1,16 +1,30 @@
 # MANGU Book OS
 
-Canonical React + TypeScript + Supabase application for the MANGU Book Operating System.
+Canonical React + TypeScript application for the MANGU Book Operating System.
+
+**Data store: MongoDB.** Auth and persistence run through a Hono API (`/api/*`) backed by MongoDB — Supabase is not used.
 
 ## Run locally
 
 ```bash
 npm install
 cp .env.example .env
+# fill MONGODB_URI + AUTH_SECRET
 npm run dev
 ```
 
-Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env`.
+This starts:
+- API on `http://localhost:3001` (`server/dev.ts`)
+- Vite on `http://localhost:5173` (proxies `/api` → API)
+
+## Environment
+
+| Variable | Where | Purpose |
+|---|---|---|
+| `MONGODB_URI` | API / Vercel | MongoDB Atlas connection string |
+| `MONGODB_DB` | API / Vercel | Database name (default `mangu_book_os`) |
+| `AUTH_SECRET` | API / Vercel | JWT signing secret for session cookies |
+| `API_PORT` | local only | API port (default `3001`) |
 
 ## Validation
 
@@ -21,31 +35,14 @@ npm run build
 
 ## Deployment (Vercel)
 
-This repo is set up for continuous deployment to Vercel via the native Git
-integration. `vercel.json` pins the framework (Vite), build command, and
-output directory, and adds an SPA fallback rewrite.
-
-One-time setup:
-
-1. In the Vercel dashboard: **Add New → Project → Import** `redinc23/book1_assign`.
-   Vercel auto-detects Vite; the settings in `vercel.json` are applied.
-2. In **Project → Settings → Environment Variables**, add both variables for
-   **Production** and **Preview**:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-
-   These are required at runtime — the app throws on load if they are missing.
-3. Deploy.
-
-After that, every push to `main` ships a **production** deploy and every pull
-request gets its own **preview** URL, so build progress and each change are
-visible in the Vercel deployments dashboard.
+1. Import `redinc23/book1_assign` into Vercel (Vite is already configured in `vercel.json`).
+2. Set **Production** + **Preview** env vars: `MONGODB_URI`, `MONGODB_DB`, `AUTH_SECRET`.
+3. Deploy. Serverless routes live in `api/[...path].ts`; the SPA rewrite skips `/api/*`.
 
 ## Architecture
 
 - `src/views/` — product modules
-- `src/hooks/` — Supabase-backed domain access
-- `src/contexts/` — authentication and active-book state
-- `prototype-reference/` — the earlier standalone v0.2 kernel used as a feature and interaction reference
-
-The React/Supabase application is the canonical implementation. The standalone prototype is retained only as a source for transplanting manuscript, graph, task-queue, snapshots, and governed-agent features.
+- `src/hooks/` + `src/contexts/` — client state calling `/api`
+- `server/` — Hono app, MongoDB access, JWT auth
+- `api/[...path].ts` — Vercel Functions entry
+- `prototype-reference/` — earlier standalone v0.2 kernel (localStorage) used as interaction reference
