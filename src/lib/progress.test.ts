@@ -11,6 +11,17 @@ describe('progressPercent', () => {
     expect(progressPercent(10, -5)).toBe(0);
   });
 
+  it('returns 0 for non-finite inputs (NaN, Infinity, null, undefined)', () => {
+    expect(progressPercent(NaN, 100)).toBe(0);
+    expect(progressPercent(50, NaN)).toBe(0);
+    expect(progressPercent(Infinity, 100)).toBe(0);
+    expect(progressPercent(50, Infinity)).toBe(0);
+    expect(progressPercent(null as unknown as number, 100)).toBe(0);
+    expect(progressPercent(50, null as unknown as number)).toBe(0);
+    expect(progressPercent(undefined as unknown as number, 100)).toBe(0);
+    expect(progressPercent(50, undefined as unknown as number)).toBe(0);
+  });
+
   it('computes a rounded percentage', () => {
     expect(progressPercent(50, 100)).toBe(50);
     expect(progressPercent(1, 3)).toBe(33);
