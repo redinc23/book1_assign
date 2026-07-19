@@ -5,6 +5,7 @@ import { useProductionTasks } from '../hooks/useProductionTasks';
 import { useActivity } from '../hooks/useActivity';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
+import { progressPercent } from '../lib/progress';
 import type { DbProductionTask } from '../hooks/useProductionTasks';
 
 export function Production() {
@@ -16,6 +17,7 @@ export function Production() {
   const [editing, setEditing] = useState<DbProductionTask | null>(null);
 
   const completedCount = tasks.filter(t => t.status === 'complete').length;
+  const overallPct = progressPercent(completedCount, tasks.length);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 text-gold animate-spin" /></div>;
@@ -37,10 +39,10 @@ export function Production() {
         <div className="card-gradient rounded-card border border-line p-5">
           <div className="flex justify-between text-xs mb-2">
             <span className="text-muted">Overall Progress</span>
-            <span className="text-gold font-semibold">{tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0}%</span>
+            <span className="text-gold font-semibold">{overallPct}%</span>
           </div>
           <div className="progress-track">
-            <div className="progress-bar" style={{ width: `${tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0}%` }} />
+            <div className="progress-bar" style={{ width: `${overallPct}%` }} />
           </div>
         </div>
       )}
