@@ -53,8 +53,16 @@ export function Editorial() {
                 onDrop={async (e) => {
                   const taskId = e.dataTransfer.getData('taskId');
                   if (taskId) {
-                    await update(taskId, { status: col.id });
-                    showToast(`Moved to ${col.label}`);
+                    const task = tasks.find(t => t.id === taskId);
+                    const ok = await update(taskId, { status: col.id });
+                    if (ok) {
+                      if (task) {
+                        await log('Updated status', `${task.title} -> ${col.label}`, 'editorial_task', taskId, activeBook?.id);
+                      }
+                      showToast(`Moved to ${col.label}`);
+                    } else {
+                      showToast('Failed to move task. Please try again.');
+                    }
                   }
                 }}
               >
@@ -82,7 +90,7 @@ export function Editorial() {
                           </div>
                         )}
                         <button
-                          onClick={(e) => { e.stopPropagation(); remove(task.id); log('Deleted', task.title, 'editorial_task', task.id, activeBook?.id); showToast('Task deleted'); }}
+                          onClick={async (e) => { e.stopPropagation(); const ok = await remove(task.id); if (ok) { await log('Deleted', task.title, 'editorial_task', task.id, activeBook?.id); showToast('Task deleted'); } else { showToast('Failed to delete task. Please try again.'); } }}
                           className="p-1 rounded hover:bg-accent-red/20 transition-colors opacity-0 group-hover:opacity-100"
                         >
                           <Trash2 className="w-3 h-3 text-accent-red" />
@@ -106,10 +114,14 @@ export function Editorial() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSubmit={async (data) => {
-          await create(data);
-          await log('Created', data.title || 'task', 'editorial_task', undefined, activeBook?.id);
-          showToast('Task created');
-          setShowCreate(false);
+          const ok = await create(data);
+          if (ok) {
+            await log('Created', data.title || 'task', 'editorial_task', undefined, activeBook?.id);
+            showToast('Task created');
+            setShowCreate(false);
+          } else {
+            showToast('Failed to create task. Please try again.');
+          }
         }}
       />
 
@@ -119,10 +131,14 @@ export function Editorial() {
           onClose={() => setEditing(null)}
           initial={editing}
           onSubmit={async (data) => {
-            await update(editing.id, data);
-            await log('Updated', data.title || editing.title, 'editorial_task', editing.id, activeBook?.id);
-            showToast('Task updated');
-            setEditing(null);
+            const ok = await update(editing.id, data);
+            if (ok) {
+              await log('Updated', data.title || editing.title, 'editorial_task', editing.id, activeBook?.id);
+              showToast('Task updated');
+              setEditing(null);
+            } else {
+              showToast('Failed to update task. Please try again.');
+            }
           }}
         />
       )}

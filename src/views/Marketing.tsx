@@ -73,7 +73,7 @@ export function Marketing() {
                 )}
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => setEditing(item)} className="p-1.5 rounded hover:bg-line"><Edit3 className="w-3.5 h-3.5 text-muted" /></button>
-                  <button onClick={async () => { await remove(item.id); await log('Deleted', item.title, 'marketing_item', item.id, activeBook?.id); showToast('Campaign deleted'); }} className="p-1.5 rounded hover:bg-accent-red/20"><Trash2 className="w-3.5 h-3.5 text-accent-red" /></button>
+                  <button onClick={async () => { const ok = await remove(item.id); if (ok) { await log('Deleted', item.title, 'marketing_item', item.id, activeBook?.id); showToast('Campaign deleted'); } else { showToast('Failed to delete campaign. Please try again.'); } }} className="p-1.5 rounded hover:bg-accent-red/20"><Trash2 className="w-3.5 h-3.5 text-accent-red" /></button>
                 </div>
               </div>
             </div>
@@ -85,10 +85,14 @@ export function Marketing() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSubmit={async (data) => {
-          await create(data);
-          await log('Created', data.title || 'campaign', 'marketing_item', undefined, activeBook?.id);
-          showToast('Campaign created');
-          setShowCreate(false);
+          const ok = await create(data);
+          if (ok) {
+            await log('Created', data.title || 'campaign', 'marketing_item', undefined, activeBook?.id);
+            showToast('Campaign created');
+            setShowCreate(false);
+          } else {
+            showToast('Failed to create campaign. Please try again.');
+          }
         }}
       />
 
@@ -98,10 +102,14 @@ export function Marketing() {
           onClose={() => setEditing(null)}
           initial={editing}
           onSubmit={async (data) => {
-            await update(editing.id, data);
-            await log('Updated', data.title || editing.title, 'marketing_item', editing.id, activeBook?.id);
-            showToast('Campaign updated');
-            setEditing(null);
+            const ok = await update(editing.id, data);
+            if (ok) {
+              await log('Updated', data.title || editing.title, 'marketing_item', editing.id, activeBook?.id);
+              showToast('Campaign updated');
+              setEditing(null);
+            } else {
+              showToast('Failed to update campaign. Please try again.');
+            }
           }}
         />
       )}

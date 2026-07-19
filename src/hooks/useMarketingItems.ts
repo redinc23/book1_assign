@@ -29,20 +29,26 @@ export function useMarketingItems(bookId: string | undefined) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const create = async (data: Partial<DbMarketingItem>) => {
-    if (!bookId) return;
-    await supabase.from('marketing_items').insert({ book_id: bookId, title: data.title || 'New Campaign', channel: data.channel || '', status: data.status || 'planned', reach: data.reach || '', date: data.date || null });
+  const create = async (data: Partial<DbMarketingItem>): Promise<boolean> => {
+    if (!bookId) return false;
+    const { error } = await supabase.from('marketing_items').insert({ book_id: bookId, title: data.title || 'New Campaign', channel: data.channel || '', status: data.status || 'planned', reach: data.reach || '', date: data.date || null });
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const update = async (id: string, data: Partial<DbMarketingItem>) => {
-    await supabase.from('marketing_items').update(data).eq('id', id);
+  const update = async (id: string, data: Partial<DbMarketingItem>): Promise<boolean> => {
+    const { error } = await supabase.from('marketing_items').update(data).eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const remove = async (id: string) => {
-    await supabase.from('marketing_items').delete().eq('id', id);
+  const remove = async (id: string): Promise<boolean> => {
+    const { error } = await supabase.from('marketing_items').delete().eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
   return { items, loading, refresh, create, update, remove };

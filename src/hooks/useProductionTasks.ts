@@ -29,20 +29,26 @@ export function useProductionTasks(bookId: string | undefined) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const create = async (data: Partial<DbProductionTask>) => {
-    if (!bookId) return;
-    await supabase.from('production_tasks').insert({ book_id: bookId, task: data.task || 'New Task', status: data.status || 'planned', due: data.due || null, assignee: data.assignee || '', category: data.category || '' });
+  const create = async (data: Partial<DbProductionTask>): Promise<boolean> => {
+    if (!bookId) return false;
+    const { error } = await supabase.from('production_tasks').insert({ book_id: bookId, task: data.task || 'New Task', status: data.status || 'planned', due: data.due || null, assignee: data.assignee || '', category: data.category || '' });
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const update = async (id: string, data: Partial<DbProductionTask>) => {
-    await supabase.from('production_tasks').update(data).eq('id', id);
+  const update = async (id: string, data: Partial<DbProductionTask>): Promise<boolean> => {
+    const { error } = await supabase.from('production_tasks').update(data).eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const remove = async (id: string) => {
-    await supabase.from('production_tasks').delete().eq('id', id);
+  const remove = async (id: string): Promise<boolean> => {
+    const { error } = await supabase.from('production_tasks').delete().eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
   return { tasks, loading, refresh, create, update, remove };

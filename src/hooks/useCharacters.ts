@@ -31,20 +31,26 @@ export function useCharacters(bookId: string | undefined) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const create = async (data: Partial<DbCharacter>) => {
-    if (!bookId) return;
-    await supabase.from('characters').insert({ book_id: bookId, name: data.name || 'New Character', role: data.role || '', archetype: data.archetype || '', arc: data.arc || '', connections: data.connections || 0, image_url: data.image_url || '', notes: data.notes || '' });
+  const create = async (data: Partial<DbCharacter>): Promise<boolean> => {
+    if (!bookId) return false;
+    const { error } = await supabase.from('characters').insert({ book_id: bookId, name: data.name || 'New Character', role: data.role || '', archetype: data.archetype || '', arc: data.arc || '', connections: data.connections || 0, image_url: data.image_url || '', notes: data.notes || '' });
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const update = async (id: string, data: Partial<DbCharacter>) => {
-    await supabase.from('characters').update(data).eq('id', id);
+  const update = async (id: string, data: Partial<DbCharacter>): Promise<boolean> => {
+    const { error } = await supabase.from('characters').update(data).eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
-  const remove = async (id: string) => {
-    await supabase.from('characters').delete().eq('id', id);
+  const remove = async (id: string): Promise<boolean> => {
+    const { error } = await supabase.from('characters').delete().eq('id', id);
+    if (error) return false;
     await refresh();
+    return true;
   };
 
   return { characters, loading, refresh, create, update, remove };

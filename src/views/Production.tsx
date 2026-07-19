@@ -57,9 +57,13 @@ export function Production() {
                 <button
                   onClick={async () => {
                     const newStatus = task.status === 'complete' ? 'planned' : 'complete';
-                    await update(task.id, { status: newStatus });
-                    await log(newStatus === 'complete' ? 'Completed' : 'Reopened', task.task, 'production_task', task.id, activeBook?.id);
-                    showToast(newStatus === 'complete' ? 'Task completed' : 'Task reopened');
+                    const ok = await update(task.id, { status: newStatus });
+                    if (ok) {
+                      await log(newStatus === 'complete' ? 'Completed' : 'Reopened', task.task, 'production_task', task.id, activeBook?.id);
+                      showToast(newStatus === 'complete' ? 'Task completed' : 'Task reopened');
+                    } else {
+                      showToast('Failed to update task. Please try again.');
+                    }
                   }}
                   className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
                     task.status === 'complete' ? 'bg-accent-green/15 border border-accent-green/25' : task.status === 'in-progress' ? 'bg-gold/15 border border-gold/25' : 'bg-bg-2 border border-line hover:border-gold/30'
@@ -89,7 +93,7 @@ export function Production() {
 
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => setEditing(task)} className="p-1.5 rounded hover:bg-line"><Edit3 className="w-3.5 h-3.5 text-muted" /></button>
-                  <button onClick={async () => { await remove(task.id); await log('Deleted', task.task, 'production_task', task.id, activeBook?.id); showToast('Task deleted'); }} className="p-1.5 rounded hover:bg-accent-red/20"><Trash2 className="w-3.5 h-3.5 text-accent-red" /></button>
+                  <button onClick={async () => { const ok = await remove(task.id); if (ok) { await log('Deleted', task.task, 'production_task', task.id, activeBook?.id); showToast('Task deleted'); } else { showToast('Failed to delete task. Please try again.'); } }} className="p-1.5 rounded hover:bg-accent-red/20"><Trash2 className="w-3.5 h-3.5 text-accent-red" /></button>
                 </div>
               </div>
             </div>
@@ -101,10 +105,14 @@ export function Production() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSubmit={async (data) => {
-          await create(data);
-          await log('Created', data.task || 'task', 'production_task', undefined, activeBook?.id);
-          showToast('Task created');
-          setShowCreate(false);
+          const ok = await create(data);
+          if (ok) {
+            await log('Created', data.task || 'task', 'production_task', undefined, activeBook?.id);
+            showToast('Task created');
+            setShowCreate(false);
+          } else {
+            showToast('Failed to create task. Please try again.');
+          }
         }}
       />
 
@@ -114,10 +122,14 @@ export function Production() {
           onClose={() => setEditing(null)}
           initial={editing}
           onSubmit={async (data) => {
-            await update(editing.id, data);
-            await log('Updated', data.task || editing.task, 'production_task', editing.id, activeBook?.id);
-            showToast('Task updated');
-            setEditing(null);
+            const ok = await update(editing.id, data);
+            if (ok) {
+              await log('Updated', data.task || editing.task, 'production_task', editing.id, activeBook?.id);
+              showToast('Task updated');
+              setEditing(null);
+            } else {
+              showToast('Failed to update task. Please try again.');
+            }
           }}
         />
       )}
