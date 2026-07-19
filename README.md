@@ -62,3 +62,14 @@ visible in the Vercel deployments dashboard.
 - `prototype-reference/` — the earlier standalone v0.2 kernel used as a feature and interaction reference
 
 The React/Supabase application is the canonical implementation. The standalone prototype is retained only as a source for transplanting manuscript, graph, task-queue, snapshots, and governed-agent features.
+
+## Product specifications
+
+Engineering handoff for the full Book OS platform build:
+
+- [`docs/README.md`](./docs/README.md) — specification suite index
+- [`docs/01-BRD-MANGU-Book-OS.md`](./docs/01-BRD-MANGU-Book-OS.md) — Business Requirements (BRD)
+- [`docs/02-FRD-MANGU-Book-OS.md`](./docs/02-FRD-MANGU-Book-OS.md) — Functional Requirements (FRD)
+- [`docs/03-TECH-SPEC-MANGU-Book-OS.md`](./docs/03-TECH-SPEC-MANGU-Book-OS.md) — Technical Specification
+- [`docs/04-REQUIREMENTS-TRACEABILITY.md`](./docs/04-REQUIREMENTS-TRACEABILITY.md) — BR → FR → Tech traceability
+- [`docs/05-DATA-DICTIONARY.md`](./docs/05-DATA-DICTIONARY.md) — Field-level data dictionary
