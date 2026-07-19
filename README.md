@@ -19,6 +19,28 @@ npm run typecheck
 npm run build
 ```
 
+## Deployment (Vercel)
+
+This repo is set up for continuous deployment to Vercel via the native Git
+integration. `vercel.json` pins the framework (Vite), build command, and
+output directory, and adds an SPA fallback rewrite.
+
+One-time setup:
+
+1. In the Vercel dashboard: **Add New → Project → Import** `redinc23/book1_assign`.
+   Vercel auto-detects Vite; the settings in `vercel.json` are applied.
+2. In **Project → Settings → Environment Variables**, add both variables for
+   **Production** and **Preview**:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+   These are required at runtime — the app throws on load if they are missing.
+3. Deploy.
+
+After that, every push to `main` ships a **production** deploy and every pull
+request gets its own **preview** URL, so build progress and each change are
+visible in the Vercel deployments dashboard.
+
 ## Architecture
 
 - `src/views/` — product modules
