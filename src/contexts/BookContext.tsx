@@ -45,12 +45,10 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
       .order('updated_at', { ascending: false });
     if (!error && data) {
       setBooks(data);
-      if (!activeBookId && data.length > 0) {
-        setActiveBookId(data[0].id);
-      }
+      setActiveBookId(currentId => currentId || (data.length > 0 ? data[0].id : null));
     }
     setLoading(false);
-  }, [user, activeBookId]);
+  }, [user]);
 
   useEffect(() => {
     refresh();

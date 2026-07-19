@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle2, Plus, Trash2, Edit3, Loader2 } from 'lucide-react';
 import { useBooks } from '../contexts/BookContext';
 import { useChapters } from '../hooks/useChapters';
@@ -18,13 +18,16 @@ export function Chapters() {
   const totalWords = chapters.reduce((a, c) => a + c.word_count, 0);
   const targetWords = chapters.reduce((a, c) => a + c.target_word_count, 0);
 
-  // Sync book word count
-  const syncBookWordCount = async () => {
-    if (activeBook && totalWords !== activeBook.word_count) {
-      const progress = activeBook.target_word_count > 0 ? Math.min(100, Math.round((totalWords / activeBook.target_word_count) * 100)) : 0;
-      await updateBook(activeBook.id, { word_count: totalWords, progress });
+  // Automatically sync book word count when chapters change
+  useEffect(() => {
+    if (activeBook) {
+      const currentTotalWords = chapters.reduce((a, c) => a + c.word_count, 0);
+      if (currentTotalWords !== activeBook.word_count) {
+        const progress = activeBook.target_word_count > 0 ? Math.min(100, Math.round((currentTotalWords / activeBook.target_word_count) * 100)) : 0;
+        updateBook(activeBook.id, { word_count: currentTotalWords, progress });
+      }
     }
-  };
+  }, [chapters, activeBook, updateBook]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 text-gold animate-spin" /></div>;
@@ -90,7 +93,7 @@ export function Chapters() {
                       <Edit3 className="w-3.5 h-3.5 text-muted" />
                     </button>
                     <button
-                      onClick={async () => { await remove(ch.id); await log('Deleted', `Ch ${ch.number}: ${ch.title}`, 'chapter', ch.id, activeBook?.id); showToast('Chapter deleted'); await syncBookWordCount(); }}
+                      onClick={async () => { await remove(ch.id); await log('Deleted', `Ch ${ch.number}: ${ch.title}`, 'chapter', ch.id, activeBook?.id); showToast('Chapter deleted'); }}
                       className="p-1.5 rounded hover:bg-accent-red/20 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5 text-accent-red" />
@@ -114,7 +117,6 @@ export function Chapters() {
           await log('Created', `Ch ${data.number}: ${data.title}`, 'chapter', undefined, activeBook?.id);
           showToast('Chapter created');
           setShowCreate(false);
-          await syncBookWordCount();
         }}
       />
 
@@ -129,7 +131,6 @@ export function Chapters() {
             await log('Updated', `Ch ${data.number || editing.number}: ${data.title || editing.title}`, 'chapter', editing.id, activeBook?.id);
             showToast('Chapter updated');
             setEditing(null);
-            await syncBookWordCount();
           }}
         />
       )}

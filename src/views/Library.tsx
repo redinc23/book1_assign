@@ -91,18 +91,20 @@ export function Library() {
         </div>
       )}
 
-      <BookFormModal
-        open={showCreate}
-        onClose={() => setShowCreate(false)}
-        onSubmit={async (data) => {
-          const created = await createBook(data);
-          if (created) {
-            await log('Created', data.title || 'Untitled', 'book', created.id);
-            showToast('Book created');
-          }
-          setShowCreate(false);
-        }}
-      />
+      {showCreate && (
+        <BookFormModal
+          open={true}
+          onClose={() => setShowCreate(false)}
+          onSubmit={async (data) => {
+            const created = await createBook(data);
+            if (created) {
+              await log('Created', data.title || 'Untitled', 'book', created.id);
+              showToast('Book created');
+            }
+            setShowCreate(false);
+          }}
+        />
+      )}
 
       {editingBook && (
         <BookFormModal

@@ -139,7 +139,8 @@ function generateInsights(book: { progress: number; word_count: number; target_w
   }
 
   if (book.word_count > 0) {
-    const avgChapterWords = chapters.length > 0 ? Math.round(book.word_count / chapters.filter(c => c.word_count > 0).length || 1) : 0;
+    const writtenChaptersCount = chapters.filter(c => c.word_count > 0).length;
+    const avgChapterWords = writtenChaptersCount > 0 ? Math.round(book.word_count / writtenChaptersCount) : 0;
     if (avgChapterWords > 5000) {
       insights.push({ id: 'len-1', type: 'style', title: 'Long chapter average', description: `Average chapter length is ${avgChapterWords.toLocaleString()} words. Consider breaking longer chapters for better pacing.`, confidence: 72, impact: 'low' });
     }

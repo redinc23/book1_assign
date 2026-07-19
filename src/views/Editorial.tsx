@@ -53,7 +53,11 @@ export function Editorial() {
                 onDrop={async (e) => {
                   const taskId = e.dataTransfer.getData('taskId');
                   if (taskId) {
+                    const task = tasks.find(t => t.id === taskId);
                     await update(taskId, { status: col.id });
+                    if (task) {
+                      await log('Updated status', `${task.title} -> ${col.label}`, 'editorial_task', taskId, activeBook?.id);
+                    }
                     showToast(`Moved to ${col.label}`);
                   }
                 }}
