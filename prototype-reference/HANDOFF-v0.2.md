@@ -1,16 +1,16 @@
 # MANGU Book OS — Developer Handoff
 
-This repository contains the current prototype code and supporting artifacts for MANGU Book OS.
+This package contains the current prototype code and supporting artifacts for MANGU Book OS.
 
 ## Start here
 
 - `MANGU_Book_OS_v0_2_Standalone.html` — fastest way to inspect the complete current prototype. Open directly in a modern browser.
-- `index.html` — modular source entry point.
-- `app.js` — base application, data model, seeded state, navigation, CRUD flows, dashboards, milestones, editorial, production, marketing, and persistence.
-- `v2.js` — v0.2 kernel extensions: manuscript studio, work queue, story graph, AI proposals, snapshots, search, revisions, notifications, and expanded records.
-- `styles.css` and `v2.css` — complete interface styling.
-- `kernel-schema.json` — implementation-oriented entity contract.
-- `README.md` and `CHANGELOG.md` — run instructions and feature summary.
+- `source_v0_2/index.html` — modular source entry point.
+- `source_v0_2/app.js` — base application, data model, seeded state, navigation, CRUD flows, dashboards, milestones, editorial, production, marketing, and persistence.
+- `source_v0_2/v2.js` — v0.2 kernel extensions: manuscript studio, work queue, story graph, AI proposals, snapshots, search, revisions, notifications, and expanded records.
+- `source_v0_2/styles.css` and `source_v0_2/v2.css` — complete interface styling.
+- `source_v0_2/kernel-schema.json` — implementation-oriented entity contract.
+- `source_v0_2/README.md` and `source_v0_2/CHANGELOG.md` — run instructions and feature summary.
 
 ## Current architecture
 
@@ -65,3 +65,10 @@ The likely production migration is:
 - Durable event and audit tables
 - Row-level permissions
 - Real model-backed agent actions behind proposal/approval gates
+
+## Historical reference
+
+- `MANGU_Book_OS_v0_1_Standalone.html`
+- `MANGU_Book_OS_v0_1_Prototype.zip`
+
+These are included only to show the evolution from v0.1 to v0.2.

@@ -1,9 +1,0 @@
-{
-  "name": "MANGU Book Operating System v0.2",
-  "short_name": "MANGU Book OS",
-  "start_url": "./index.html#dashboard",
-  "display": "standalone",
-  "background_color": "#071318",
-  "theme_color": "#071318",
-  "description": "A local-first publishing operating-system kernel connecting manuscripts, story knowledge, workflow, approvals, assets, and agents."
-}
