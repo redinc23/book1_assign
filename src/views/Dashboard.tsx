@@ -1,6 +1,7 @@
-import { BookOpen, TrendingUp, Target, ArrowRight, Sparkles, Plus, Loader2 } from 'lucide-react';
+import { BookOpen, Target, ArrowRight, Sparkles, Plus, Loader2, Milestone } from 'lucide-react';
 import { useBooks } from '../contexts/BookContext';
 import { useActivity } from '../hooks/useActivity';
+import { useMilestones } from '../hooks/useMilestones';
 import type { ViewId } from '../types';
 
 interface DashboardProps {
@@ -10,6 +11,7 @@ interface DashboardProps {
 export function Dashboard({ onNavigate }: DashboardProps) {
   const { books, activeBook, loading } = useBooks();
   const { entries } = useActivity();
+  const { currentMilestone, milestones } = useMilestones(activeBook?.id);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="w-6 h-6 text-gold animate-spin" /></div>;
@@ -21,6 +23,8 @@ export function Dashboard({ onNavigate }: DashboardProps) {
     return <EmptyDashboard onNavigate={onNavigate} />;
   }
 
+  const completedMilestones = milestones.filter(m => m.status === 'completed' || m.status === 'overridden').length;
+
   return (
     <div className="space-y-8 max-w-7xl">
       {activeBook && (
@@ -31,24 +35,35 @@ export function Dashboard({ onNavigate }: DashboardProps) {
               <img src={activeBook.cover_url} alt={activeBook.title} className="w-24 h-36 rounded-lg object-cover shadow-heavy" />
             )}
             <div className="flex-1 min-w-0">
-              <span className={`status-badge status-${activeBook.status === 'complete' ? 'complete' : 'working'} mb-3`}>
-                <span className="dot" />
-                {activeBook.phase}
-              </span>
-              <h2 className="text-2xl lg:text-3xl font-serif font-bold text-cream mt-2">{activeBook.title}</h2>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`status-badge status-${activeBook.status === 'complete' ? 'complete' : 'working'}`}>
+                  <span className="dot" />
+                  {activeBook.phase}
+                </span>
+                {currentMilestone?.template && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gold/10 text-gold border border-gold/20">
+                    {currentMilestone.template.code}: {currentMilestone.template.name}
+                  </span>
+                )}
+              </div>
+              <h2 className="text-2xl lg:text-3xl font-serif font-bold text-cream">{activeBook.title}</h2>
               <p className="text-muted text-sm mt-1">{activeBook.genre}{activeBook.author ? ` — ${activeBook.author}` : ''}</p>
               <div className="mt-4 flex items-center gap-4">
                 <div className="flex-1 max-w-xs">
                   <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-cream/70">{activeBook.word_count.toLocaleString()} words</span>
-                    <span className="text-gold font-semibold">{activeBook.progress}%</span>
+                    <span className="text-cream/70">
+                      {currentMilestone ? `${currentMilestone.template?.code} Readiness` : 'Progress'}
+                    </span>
+                    <span className="text-gold font-semibold">
+                      {currentMilestone ? `${currentMilestone.readiness_score}%` : `${activeBook.progress}%`}
+                    </span>
                   </div>
                   <div className="progress-track">
-                    <div className="progress-bar" style={{ width: `${activeBook.progress}%` }} />
+                    <div className="progress-bar" style={{ width: `${currentMilestone?.readiness_score ?? activeBook.progress}%` }} />
                   </div>
                 </div>
-                <button onClick={() => onNavigate('chapters')} className="flex items-center gap-1.5 text-gold text-sm font-semibold hover:text-gold-2 transition-colors">
-                  Continue <ArrowRight className="w-4 h-4" />
+                <button onClick={() => onNavigate('lifecycle')} className="flex items-center gap-1.5 text-gold text-sm font-semibold hover:text-gold-2 transition-colors">
+                  Lifecycle <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -59,7 +74,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Active Projects', value: activeProjects.toString(), icon: BookOpen, color: 'text-accent-blue' },
-          { label: 'Total Books', value: books.length.toString(), icon: TrendingUp, color: 'text-accent-green' },
+          { label: 'Milestone Progress', value: `${completedMilestones}/${milestones.length}`, icon: Milestone, color: 'text-accent-green' },
           { label: 'Next Deadline', value: getNextDeadline(books), icon: Target, color: 'text-accent-orange' },
           { label: 'Activity', value: entries.length.toString(), icon: Sparkles, color: 'text-gold-2' },
         ].map((stat) => (
@@ -111,7 +126,7 @@ export function Dashboard({ onNavigate }: DashboardProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-cream truncate">{book.title}</p>
-                  <p className="text-[10px] text-muted">{book.phase} — {book.progress}%</p>
+                  <p className="text-[10px] text-muted">{book.current_milestone || book.phase} — {book.progress}%</p>
                 </div>
               </div>
             ))}

@@ -14,6 +14,8 @@ export interface Book {
   word_count: number;
   target_word_count: number;
   deadline: string | null;
+  current_milestone: string;
+  genome: Record<string, string>;
   created_at: string;
   updated_at: string;
 }
@@ -44,7 +46,7 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
       .select('*')
       .order('updated_at', { ascending: false });
     if (!error && data) {
-      setBooks(data);
+      setBooks(data as Book[]);
       setActiveBookId(currentId => (currentId && data.some(b => b.id === currentId)) ? currentId : (data.length > 0 ? data[0].id : null));
     }
     setLoading(false);
@@ -57,16 +59,30 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
   const createBook = async (data: Partial<Book>): Promise<Book | null> => {
     const { data: created, error } = await supabase
       .from('books')
-      .insert({ title: data.title || 'Untitled', author: data.author || '', genre: data.genre || '', cover_url: data.cover_url || '', target_word_count: data.target_word_count || 80000, deadline: data.deadline || null })
+      .insert({
+        title: data.title || 'Untitled',
+        author: data.author || '',
+        genre: data.genre || '',
+        cover_url: data.cover_url || '',
+        target_word_count: data.target_word_count || 80000,
+        deadline: data.deadline || null,
+        phase: data.phase || 'Concept',
+        current_milestone: 'M0',
+        genome: {},
+      })
       .select()
       .single();
     if (error) return null;
+
+    // Seed milestones for the new book
+    await seedMilestonesForBook(created.id);
+
     await refresh();
-    return created;
+    return created as Book;
   };
 
   const updateBook = async (id: string, data: Partial<Book>) => {
-    await supabase.from('books').update({ ...data, updated_at: new Date().toISOString() }).eq('id', id);
+    await supabase.from('books').update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id);
     await refresh();
   };
 
@@ -83,6 +99,41 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
       {children}
     </BookContext.Provider>
   );
+}
+
+async function seedMilestonesForBook(bookId: string) {
+  const { data: templates } = await supabase
+    .from('milestone_templates')
+    .select('*, milestone_template_items(*)')
+    .order('sort_order');
+
+  if (!templates) return;
+
+  for (const template of templates) {
+    const { data: milestone } = await supabase
+      .from('milestones')
+      .insert({
+        book_id: bookId,
+        template_id: template.id,
+        status: template.sort_order === 0 ? 'in_progress' : 'pending',
+        readiness_score: 0,
+        started_at: template.sort_order === 0 ? new Date().toISOString() : null,
+      })
+      .select()
+      .single();
+
+    if (!milestone) continue;
+
+    const items = (template.milestone_template_items || []).map((ti: any) => ({
+      milestone_id: milestone.id,
+      template_item_id: ti.id,
+      completed: false,
+    }));
+
+    if (items.length > 0) {
+      await supabase.from('milestone_items').insert(items);
+    }
+  }
 }
 
 export function useBooks() {
