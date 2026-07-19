@@ -60,5 +60,14 @@ visible in the Vercel deployments dashboard.
 - `src/hooks/` — Supabase-backed domain access
 - `src/contexts/` — authentication and active-book state
 - `prototype-reference/` — the earlier standalone v0.2 kernel used as a feature and interaction reference
+- `docs/pos/` — Point of Sale (Direct Sales) BRD, FRD, and technical specification pack
 
 The React/Supabase application is the canonical implementation. The standalone prototype is retained only as a source for transplanting manuscript, graph, task-queue, snapshots, and governed-agent features.
+
+## POS specification pack
+
+Engineering-ready specs for the MANGU Book OS **Point of Sale / Direct Sales** module (Volume VII commercial execution) live in [`docs/pos/`](./docs/pos/README.md):
+
+1. [Business Requirements (BRD)](./docs/pos/01-BRD-MANGU-POS.md)
+2. [Functional Requirements (FRD)](./docs/pos/02-FRD-MANGU-POS.md)
+3. [Technical Specification](./docs/pos/03-TECH-SPEC-MANGU-POS.md)
