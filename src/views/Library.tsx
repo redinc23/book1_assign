@@ -100,8 +100,10 @@ export function Library() {
             if (created) {
               await log('Created', data.title || 'Untitled', 'book', created.id);
               showToast('Book created');
+              setShowCreate(false);
+            } else {
+              showToast('Failed to create book. Please try again.');
             }
-            setShowCreate(false);
           }}
         />
       )}

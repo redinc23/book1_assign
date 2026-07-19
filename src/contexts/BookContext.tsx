@@ -45,7 +45,7 @@ export function BookProvider({ children }: { children: React.ReactNode }) {
       .order('updated_at', { ascending: false });
     if (!error && data) {
       setBooks(data);
-      setActiveBookId(currentId => currentId || (data.length > 0 ? data[0].id : null));
+      setActiveBookId(currentId => (currentId && data.some(b => b.id === currentId)) ? currentId : (data.length > 0 ? data[0].id : null));
     }
     setLoading(false);
   }, [user]);

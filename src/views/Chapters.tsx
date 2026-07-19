@@ -24,7 +24,8 @@ export function Chapters() {
       const currentTotalWords = chapters.reduce((a, c) => a + c.word_count, 0);
       if (currentTotalWords !== activeBook.word_count) {
         const progress = activeBook.target_word_count > 0 ? Math.min(100, Math.round((currentTotalWords / activeBook.target_word_count) * 100)) : 0;
-        updateBook(activeBook.id, { word_count: currentTotalWords, progress });
+        updateBook(activeBook.id, { word_count: currentTotalWords, progress })
+          .catch(err => console.error('Failed to sync book word count:', err));
       }
     }
   }, [chapters, activeBook, updateBook]);
